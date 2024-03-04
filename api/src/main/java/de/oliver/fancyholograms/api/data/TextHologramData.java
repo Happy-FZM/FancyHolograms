@@ -20,6 +20,8 @@ public class TextHologramData implements Data {
     private TextColor background;
     private TextDisplay.TextAlignment textAlignment;
     private boolean textShadow;
+    private boolean seeThrough;
+    private int lineWidth;
     private int textUpdateInterval;
 
     public TextHologramData(List<String> text, TextColor background, TextDisplay.TextAlignment textAlignment, boolean textShadow, int textUpdateInterval) {
@@ -27,6 +29,8 @@ public class TextHologramData implements Data {
         this.background = background;
         this.textAlignment = textAlignment;
         this.textShadow = textShadow;
+        this.seeThrough = false;
+        this.lineWidth = Hologram.LINE_WIDTH;
         this.textUpdateInterval = textUpdateInterval;
     }
 
@@ -34,8 +38,11 @@ public class TextHologramData implements Data {
     }
 
     public static TextHologramData getDefault(String name) {
+        List<String> text = new ArrayList<>();
+        text.add("Edit this line with /hologram edit " + name);
+
         return new TextHologramData(
-                List.of("Edit this line with /hologram edit " + name),
+                text,
                 null,
                 DEFAULT_TEXT_ALIGNMENT,
                 DEFAULT_TEXT_SHADOW_STATE,
@@ -51,6 +58,8 @@ public class TextHologramData implements Data {
         }
 
         textShadow = section.getBoolean("text_shadow", false);
+        seeThrough = section.getBoolean("see_through", false);
+        lineWidth = section.getInt("line_width", Hologram.LINE_WIDTH);
         textUpdateInterval = section.getInt("update_text_interval", DEFAULT_TEXT_UPDATE_INTERVAL);
 
         String textAlignmentStr = section.getString("text_alignment", DEFAULT_TEXT_ALIGNMENT.name().toLowerCase());
@@ -77,6 +86,8 @@ public class TextHologramData implements Data {
     public void write(ConfigurationSection section, String name) {
         section.set("text", text);
         section.set("text_shadow", textShadow);
+        section.set("see_through", seeThrough);
+        section.set("line_width", lineWidth);
         section.set("text_alignment", textAlignment.name().toLowerCase(Locale.ROOT));
         section.set("update_text_interval", textUpdateInterval);
 
@@ -135,6 +146,24 @@ public class TextHologramData implements Data {
 
     public TextHologramData setTextShadow(boolean textShadow) {
         this.textShadow = textShadow;
+        return this;
+    }
+
+    public boolean isSeeThrough() {
+        return seeThrough;
+    }
+
+    public TextHologramData setSeeThrough(boolean seeThrough) {
+        this.seeThrough = seeThrough;
+        return this;
+    }
+
+    public int getLineWidth() {
+        return lineWidth;
+    }
+
+    public TextHologramData setLineWidth(int lineWidth) {
+        this.lineWidth = lineWidth;
         return this;
     }
 

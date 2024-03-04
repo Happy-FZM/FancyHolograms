@@ -67,11 +67,6 @@ public class MoveHereCMD implements Subcommand {
 
     @Override
     public boolean run(@NotNull Player player, @Nullable Hologram hologram, @NotNull String[] args) {
-        if (hologram.getData().getDisplayData().getLinkedNpcName() != null) {
-            MessageHelper.error(player, "This hologram is linked with an NPC");
-            MessageHelper.error(player, "To unlink: /hologram edit " + hologram.getData().getName() + " unlinkWithNpc");
-            return false;
-        }
 
         final var location = player.getLocation();
 

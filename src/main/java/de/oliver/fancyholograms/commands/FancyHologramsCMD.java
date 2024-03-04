@@ -29,7 +29,7 @@ public final class FancyHologramsCMD extends Command {
         }
 
         if (args.length != 1) {
-            MessageHelper.info(sender, "/FancyHolograms <save|reload|version>");
+            MessageHelper.info(sender, "/FancyHolograms <save|reload>");
             return false;
         }
 
@@ -45,7 +45,6 @@ public final class FancyHologramsCMD extends Command {
 
                 MessageHelper.success(sender, "Reloaded config and holograms");
             }
-            case "version" -> FancyHolograms.get().getVersionConfig().checkVersionAndDisplay(sender, false);
             default -> {
                 MessageHelper.info(sender, "/FancyHolograms <save|reload|version>");
                 return false;
@@ -61,7 +60,7 @@ public final class FancyHologramsCMD extends Command {
             return Collections.emptyList();
         }
 
-        return Stream.of("version", "reload", "save")
+        return Stream.of("reload", "save")
                 .filter(alias -> alias.startsWith(args[0].toLowerCase(Locale.ROOT)))
                 .toList();
     }

@@ -1,17 +1,21 @@
 plugins {
     id("java-library")
     id("maven-publish")
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 dependencies {
+//    implementation(project(":"))
     compileOnly("io.papermc.paper:paper-api:${findProperty("minecraftVersion")}-R0.1-SNAPSHOT")
 
-    compileOnly("de.oliver:FancyLib:${findProperty("fancyLibVersion")}")
-
-    implementation("com.github.CoolDCB:ChatColorHandler:${findProperty("chatcolorhandlerVersion")}")
+    implementation("me.dave:ChatColorHandler:${findProperty("chatcolorhandlerVersion")}")
 }
 
 tasks {
+    shadowJar {
+        archiveClassifier.set("")
+    }
+
     publishing {
         repositories {
             maven {

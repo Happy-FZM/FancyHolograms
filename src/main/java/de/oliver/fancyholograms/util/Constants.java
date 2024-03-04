@@ -38,9 +38,4 @@ public enum Constants {
             <%primary_color%>- /hologram edit <hologram> updateTextInterval <seconds> <dark_gray>- <white>Sets the interval for updating the text
             """.replace("%primary_color%", MessageHelper.getPrimaryColor());
 
-    public static final String HELP_TEXT_NPCS = """
-            <%primary_color%>- /hologram edit <hologram> linkWithNpc <npc name> <dark_gray>- <white>Links the hologram with an NPC
-            <%primary_color%>- /hologram edit <hologram> unlinkWithNpc <dark_gray>- <white>Unlinks the hologram with an NPC
-            """.replace("%primary_color%", MessageHelper.getPrimaryColor());
-
 }

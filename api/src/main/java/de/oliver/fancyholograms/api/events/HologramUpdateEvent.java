@@ -100,6 +100,14 @@ public final class HologramUpdateEvent extends HologramEvent {
          */
         TEXT_SHADOW,
         /**
+         * @see HologramData#isSeeThrough()
+         */
+        SEE_THROUGH,
+        /**
+         * @see HologramData#getLineWidth()
+         */
+        LINE_WIDTH,
+        /**
          * @see HologramData#getTextAlignment()
          */
         TEXT_ALIGNMENT,

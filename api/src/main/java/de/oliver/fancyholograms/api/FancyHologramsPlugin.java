@@ -16,7 +16,7 @@ public interface FancyHologramsPlugin {
 
     JavaPlugin getPlugin();
 
-    boolean isUsingViaVersion();
+//    boolean isUsingViaVersion();
 
     FancyScheduler getScheduler();
 

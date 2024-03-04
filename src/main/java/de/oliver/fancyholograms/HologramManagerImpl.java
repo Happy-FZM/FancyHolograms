@@ -1,11 +1,11 @@
 package de.oliver.fancyholograms;
 
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import de.oliver.fancyholograms.api.Hologram;
 import de.oliver.fancyholograms.api.HologramManager;
 import de.oliver.fancyholograms.api.data.HologramData;
 import de.oliver.fancyholograms.api.data.TextHologramData;
-import de.oliver.fancynpcs.api.FancyNpcsPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -182,6 +182,14 @@ public final class HologramManagerImpl implements HologramManager {
                 updateTimes.put(hologram.getData().getName(), time);
             }
         });
+
+        this.plugin.getScheduler().runTaskTimerAsynchronously(20L, 20L, () -> {
+            for (final Hologram hologram : this.plugin.getHologramsManager().getHolograms()) {
+                for (final Player player : Bukkit.getOnlinePlayers()) {
+                    hologram.checkAndUpdateShownStateForPlayer(player);
+                }
+            }
+        });
     }
 
     /**
@@ -203,31 +211,6 @@ public final class HologramManagerImpl implements HologramManager {
         for (final var hologram : holograms.values()) {
             FancyHolograms.get().getScheduler().runTaskAsynchronously(() -> hologram.hideHologram(online));
         }
-    }
-
-
-    /**
-     * Syncs a hologram with its linked NPC, if any.
-     *
-     * @param hologram The hologram to sync.
-     */
-    public void syncHologramWithNpc(@NotNull final Hologram hologram) {
-        final var linkedNpcName = hologram.getData().getDisplayData().getLinkedNpcName();
-        if (linkedNpcName == null) {
-            return;
-        }
-
-        final var npc = FancyNpcsPlugin.get().getNpcManager().getNpc(linkedNpcName);
-        if (npc == null) {
-            return;
-        }
-
-        npc.getData().setDisplayName("<empty>");
-        npc.getData().setShowInTab(false);
-        npc.updateForAll();
-
-        final var location = npc.getData().getLocation().clone().add(0, npc.getEyeHeight() + 0.5, 0);
-        hologram.getData().getDisplayData().setLocation(location);
     }
 
     /**

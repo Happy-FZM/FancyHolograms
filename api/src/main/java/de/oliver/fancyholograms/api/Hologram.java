@@ -29,7 +29,7 @@ public abstract class Hologram {
 
     public static final int LINE_WIDTH = 1000;
     public static final TextColor TRANSPARENT = () -> 0;
-    protected static final int MINIMUM_PROTOCOL_VERSION = 762;
+//    protected static final int MINIMUM_PROTOCOL_VERSION = 762;
 
     @NotNull
     protected final HologramData data;
@@ -141,6 +141,10 @@ public abstract class Hologram {
         }
 
         if (!location.getWorld().equals(player.getWorld())) {
+            return false;
+        }
+
+        if (!getData().getDisplayData().isVisibleByDefault() && !player.hasPermission("fancyholograms.viewhologram." + data.getName())) {
             return false;
         }
 

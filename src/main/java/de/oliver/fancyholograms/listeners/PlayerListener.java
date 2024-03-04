@@ -24,9 +24,6 @@ public final class PlayerListener implements Listener {
             hologram.checkAndUpdateShownStateForPlayer(event.getPlayer());
         }
 
-        if (!this.plugin.getHologramConfiguration().areVersionNotificationsMuted() && event.getPlayer().hasPermission("fancyholograms.admin")) {
-            FancyHolograms.get().getVersionConfig().checkVersionAndDisplay(event.getPlayer(), true);
-        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -36,17 +33,6 @@ public final class PlayerListener implements Listener {
                 hologram.hideHologram(event.getPlayer());
             }
         });
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onMove(@NotNull final PlayerMoveEvent event) {
-        if (!event.hasChangedBlock()) {
-            return; // reduce checks we need to do
-        }
-
-        for (final Hologram hologram : this.plugin.getHologramsManager().getHolograms()) {
-            hologram.checkAndUpdateShownStateForPlayer(event.getPlayer());
-        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

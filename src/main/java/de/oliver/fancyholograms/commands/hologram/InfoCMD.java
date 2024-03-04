@@ -33,9 +33,6 @@ public class InfoCMD implements Subcommand {
         MessageHelper.info(player, "Billboard: <gray>" + displayData.getBillboard().name());
         MessageHelper.info(player, "Shadow radius: <gray>" + displayData.getShadowRadius());
         MessageHelper.info(player, "Shadow strength: <gray>" + displayData.getShadowStrength());
-        if (displayData.getLinkedNpcName() != null) {
-            MessageHelper.info(player, "Linked npc: <gray>" + displayData.getLinkedNpcName());
-        }
 
         if (hologram.getData().getTypeData() instanceof TextHologramData textData) {
             MessageHelper.info(player, "Text: ");

@@ -1,8 +1,6 @@
 package de.oliver.fancyholograms.version;
 
 import com.mojang.math.Transformation;
-import com.viaversion.viaversion.api.Via;
-import de.oliver.fancyholograms.api.FancyHologramsPlugin;
 import de.oliver.fancyholograms.api.Hologram;
 import de.oliver.fancyholograms.api.data.BlockHologramData;
 import de.oliver.fancyholograms.api.data.HologramData;
@@ -115,7 +113,7 @@ public final class Hologram1_19_4 extends Hologram {
         if (display instanceof TextDisplay textDisplay && data.getTypeData() instanceof TextHologramData textData) {
             // line width
             final var DATA_LINE_WIDTH_ID = ReflectionUtils.getStaticValue(TextDisplay.class, MappingKeys1_19_4.DATA_LINE_WIDTH_ID.getMapping());
-            display.getEntityData().set((EntityDataAccessor<Integer>) DATA_LINE_WIDTH_ID, Hologram.LINE_WIDTH);
+            display.getEntityData().set((EntityDataAccessor<Integer>) DATA_LINE_WIDTH_ID, textData.getLineWidth());
 
             // background
             final var DATA_BACKGROUND_COLOR_ID = ReflectionUtils.getStaticValue(TextDisplay.class, MappingKeys1_19_4.DATA_BACKGROUND_COLOR_ID.getMapping());
@@ -134,6 +132,13 @@ public final class Hologram1_19_4 extends Hologram {
                 textDisplay.setFlags((byte) (textDisplay.getFlags() | TextDisplay.FLAG_SHADOW));
             } else {
                 textDisplay.setFlags((byte) (textDisplay.getFlags() & ~TextDisplay.FLAG_SHADOW));
+            }
+
+            // see through
+            if (textData.isSeeThrough()) {
+                textDisplay.setFlags((byte) (textDisplay.getFlags() | TextDisplay.FLAG_SEE_THROUGH));
+            } else {
+                textDisplay.setFlags((byte) (textDisplay.getFlags() & ~TextDisplay.FLAG_SEE_THROUGH));
             }
 
             // text alignment
@@ -200,11 +205,11 @@ public final class Hologram1_19_4 extends Hologram {
 
         ServerPlayer serverPlayer = ((CraftPlayer) player).getHandle();
 
-        // TODO: cache player protocol version
-        final var protocolVersion = FancyHologramsPlugin.get().isUsingViaVersion() ? Via.getAPI().getPlayerVersion(player) : MINIMUM_PROTOCOL_VERSION;
-        if (protocolVersion < MINIMUM_PROTOCOL_VERSION) {
-            return false;
-        }
+//        // TODO: cache player protocol version
+//        final var protocolVersion = FancyHologramsPlugin.get().isUsingViaVersion() ? Via.getAPI().getPlayerVersion(player) : MINIMUM_PROTOCOL_VERSION;
+//        if (protocolVersion < MINIMUM_PROTOCOL_VERSION) {
+//            return false;
+//        }
 
         serverPlayer.connection.send(new ClientboundAddEntityPacket(display));
         this.shown.add(player.getUniqueId());

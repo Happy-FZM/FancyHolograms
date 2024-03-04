@@ -12,13 +12,6 @@ public interface HologramConfiguration {
     void reload(@NotNull FancyHologramsPlugin plugin);
 
     /**
-     * Returns whether version notifications are muted.
-     *
-     * @return {@code true} if version notifications are muted, {@code false} otherwise.
-     */
-    boolean areVersionNotificationsMuted();
-
-    /**
      * Returns whether autosave is enabled.
      *
      * @return {@code true} if autosave is enabled, {@code false} otherwise.

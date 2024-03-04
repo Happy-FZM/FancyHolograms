@@ -10,7 +10,6 @@ import de.oliver.fancyholograms.api.events.HologramUpdateEvent;
 import de.oliver.fancyholograms.commands.hologram.*;
 import de.oliver.fancyholograms.util.Constants;
 import de.oliver.fancylib.MessageHelper;
-import de.oliver.fancynpcs.api.FancyNpcsPlugin;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -59,7 +58,7 @@ public final class HologramCMD extends Command {
         }
 
         if (args.length == 0 || args[0].equalsIgnoreCase("help")) {
-            MessageHelper.info(player, Constants.HELP_TEXT + (!FancyHolograms.isUsingFancyNpcs() ? "" : "\n" + Constants.HELP_TEXT_NPCS));
+            MessageHelper.info(player, Constants.HELP_TEXT);
             return true;
         }
 
@@ -152,9 +151,7 @@ public final class HologramCMD extends Command {
                 return Collections.emptyList();
             }
 
-            final var usingNpcs = FancyHolograms.isUsingFancyNpcs();
-
-            List<String> suggestions = new ArrayList<>(Arrays.asList("position", "moveHere", "moveTo", "rotate", "rotatepitch", "billboard", "scale", "visibilityDistance", "shadowRadius", "shadowStrength", usingNpcs ? "linkWithNpc" : "", usingNpcs ? "unlinkWithNpc" : ""));
+            List<String> suggestions = new ArrayList<>(Arrays.asList("position", "moveHere", "moveTo", "rotate", "rotatepitch", "billboard", "scale", "visibilityDistance", "visibleByDefault", "shadowRadius", "shadowStrength", "seethrough", "linewidth"));
             suggestions.addAll(type.getCommands());
 
             return suggestions.stream().filter(input -> input.toLowerCase().startsWith(args[2].toLowerCase(Locale.ROOT))).toList();
@@ -201,20 +198,17 @@ public final class HologramCMD extends Command {
                     TextHologramData textData = (TextHologramData) hologram.getData().getTypeData();
                     yield Stream.of(!textData.isTextShadow()).map(Object::toString);
                 }
+                case "seethrough" -> {
+                    TextHologramData textData = (TextHologramData) hologram.getData().getTypeData();
+                    yield Stream.of(!textData.isSeeThrough()).map(Object::toString);
+                }
                 case "textalignment" -> Arrays.stream(TextDisplay.TextAlignment.values()).map(Enum::name);
                 case "setline", "removeline" -> {
                     TextHologramData textData = (TextHologramData) hologram.getData().getTypeData();
                     yield IntStream.range(1, textData.getText().size() + 1).mapToObj(Integer::toString);
                 }
-                case "linkwithnpc" -> {
-                    if (!FancyHolograms.isUsingFancyNpcs()) {
-                        yield Stream.<String>empty();
-                    }
-
-                    yield FancyNpcsPlugin.get().getNpcManager().getAllNpcs().stream().map(npc -> npc.getData().getName());
-                }
                 case "block" -> Arrays.stream(Material.values()).filter(Material::isBlock).map(Enum::name);
-
+                case "visiblebydefault" -> Stream.of("true", "false");
                 default -> null;
             };
 
@@ -279,9 +273,6 @@ public final class HologramCMD extends Command {
             case "position", "movehere" -> {
                 return new MoveHereCMD().run(player, hologram, args);
             }
-            case "unlinkwithnpc" -> {
-                return new UnlinkWithNpcCMD().run(player, hologram, args);
-            }
             case "item" -> {
                 return new ItemCMD().run(player, hologram, args);
             }
@@ -301,7 +292,6 @@ public final class HologramCMD extends Command {
             case "scale" -> new ScaleCMD().run(player, hologram, args);
             case "updatetextinterval" -> new UpdateTextIntervalCMD().run(player, hologram, args);
             case "visibilitydistance" -> new VisibilityDistanceCMD().run(player, hologram, args);
-            case "linkwithnpc" -> new LinkWithNpcCMD().run(player, hologram, args);
             case "shadowradius" -> new ShadowRadiusCMD().run(player, hologram, args);
             case "shadowstrength" -> new ShadowStrengthCMD().run(player, hologram, args);
 
@@ -313,6 +303,9 @@ public final class HologramCMD extends Command {
             case "insertbefore" -> new InsertBeforeCMD().run(player, hologram, args);
             case "insertafter" -> new InsertAfterCMD().run(player, hologram, args);
             case "textshadow" -> new TextShadowCMD().run(player, hologram, args);
+            case "seethrough" -> new SeeThroughCMD().run(player, hologram, args);
+            case "linewidth" -> new LineWidthCMD().run(player, hologram, args);
+            case "visiblebydefault" -> new VisibleByDefaultCMD().run(player, hologram, args);
             case "textalignment" -> new TextAlignmentCMD().run(player, hologram, args);
 
             // block data

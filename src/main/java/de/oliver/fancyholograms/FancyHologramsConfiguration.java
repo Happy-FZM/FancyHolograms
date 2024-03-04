@@ -14,11 +14,6 @@ import java.util.List;
 public final class FancyHologramsConfiguration implements HologramConfiguration {
 
     /**
-     * Indicates whether version notifications are muted.
-     */
-    private boolean versionNotifsMuted;
-
-    /**
      * Indicates whether autosave is enabled.
      */
     private boolean autosaveEnabled;
@@ -57,7 +52,6 @@ public final class FancyHologramsConfiguration implements HologramConfiguration 
 
         final var config = pluginImpl.getConfig();
 
-        versionNotifsMuted = (boolean) ConfigHelper.getOrDefault(config, "mute_version_notification", false);
         config.setInlineComments("mute_version_notification", List.of("Whether version notifications are muted."));
 
         autosaveEnabled = (boolean) ConfigHelper.getOrDefault(config, "enable_autosave", true);
@@ -84,12 +78,6 @@ public final class FancyHologramsConfiguration implements HologramConfiguration 
             // Can't dispatch task if plugin is disabled
             pluginImpl.saveConfig();
         }
-    }
-
-
-    @Override
-    public boolean areVersionNotificationsMuted() {
-        return versionNotifsMuted;
     }
 
     @Override

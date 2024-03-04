@@ -14,7 +14,7 @@ runPaper.folia.registerTask()
 allprojects {
     group = "de.oliver"
     val buildId = System.getenv("BUILD_ID")
-    version = "2.0.5" + (if (buildId != null) ".$buildId" else "")
+    version = "2.0.6" + (if (buildId != null) ".$buildId" else "")
     description = "Simple, lightweight and fast hologram plugin using display entities"
 
 
@@ -24,7 +24,7 @@ allprojects {
         maven(url = "https://papermc.io/repo/repository/maven-public/")
 
         maven(url = "https://repo.fancyplugins.de/snapshots")
-        maven(url = "https://repo.extendedclip.com/content/repositories/placeholderapi/")
+        maven(url = "https://repo.smrt-1.com/releases")
         maven(url = "https://repo.viaversion.com/")
         maven(url = "https://jitpack.io")
     }
@@ -39,9 +39,9 @@ dependencies {
     implementation(project(":implementation_1_20_1", configuration = "reobf"))
     implementation(project(":implementation_1_19_4", configuration = "reobf"))
 
-    implementation("de.oliver:FancyLib:${findProperty("fancyLibVersion")}")
+//    implementation("de.oliver:FancyLib:${findProperty("fancyLibVersion")}")
 
-    compileOnly("de.oliver:FancyNpcs:${findProperty("fancyNpcsVersion")}")
+//    compileOnly("de.oliver:FancyNpcs:${findProperty("fancyNpcsVersion")}")
 }
 
 tasks {
@@ -52,6 +52,9 @@ tasks {
     shadowJar {
         archiveBaseName.set(rootProject.name)
         archiveClassifier.set("")
+
+        dependsOn(":api:shadowJar")
+        relocate("me.dave.chatcolorhandler", "de.oliver.fancyholograms.libs.chatcolorhandler")
     }
 
     runServer {
@@ -62,8 +65,8 @@ tasks {
             hangar("PlaceholderAPI", "2.11.5")
             modrinth("miniplaceholders", "M6gjRuIx")
 
-            hangar("ViaVersion", "4.9.3-SNAPSHOT+181")
-            hangar("ViaBackwards", "4.9.2-SNAPSHOT+107")
+            hangar("ViaVersion", "4.9.3-SNAPSHOT+208")
+            hangar("ViaBackwards", "4.9.2-SNAPSHOT+126")
         }
     }
 

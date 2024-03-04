@@ -1,28 +1,21 @@
 package de.oliver.fancyholograms;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import de.oliver.fancyholograms.api.*;
 import de.oliver.fancyholograms.api.data.HologramData;
 import de.oliver.fancyholograms.commands.FancyHologramsCMD;
 import de.oliver.fancyholograms.commands.FancyHologramsTestCMD;
 import de.oliver.fancyholograms.commands.HologramCMD;
-import de.oliver.fancyholograms.listeners.NpcListener;
 import de.oliver.fancyholograms.listeners.PlayerListener;
 import de.oliver.fancyholograms.storage.FlatFileHologramStorage;
 import de.oliver.fancyholograms.version.Hologram1_19_4;
 import de.oliver.fancyholograms.version.Hologram1_20_1;
 import de.oliver.fancyholograms.version.Hologram1_20_2;
 import de.oliver.fancyholograms.version.Hologram1_20_4;
-import de.oliver.fancylib.FancyLib;
-import de.oliver.fancylib.Metrics;
-import de.oliver.fancylib.VersionConfig;
-import de.oliver.fancylib.sentry.SentryLoader;
 import de.oliver.fancylib.serverSoftware.ServerSoftware;
 import de.oliver.fancylib.serverSoftware.schedulers.BukkitScheduler;
 import de.oliver.fancylib.serverSoftware.schedulers.FancyScheduler;
 import de.oliver.fancylib.serverSoftware.schedulers.FoliaScheduler;
-import de.oliver.fancylib.versionFetcher.MasterVersionFetcher;
-import de.oliver.fancylib.versionFetcher.VersionFetcher;
-import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -33,9 +26,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
-
-import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 public final class FancyHolograms extends JavaPlugin implements FancyHologramsPlugin {
 
@@ -44,22 +37,24 @@ public final class FancyHolograms extends JavaPlugin implements FancyHologramsPl
 
     @Nullable
     private static FancyHolograms INSTANCE;
-    private final VersionFetcher versionFetcher = new MasterVersionFetcher("FancyHolograms");
-    private final VersionConfig versionConfig = new VersionConfig(this, versionFetcher);
     private final FancyScheduler scheduler = ServerSoftware.isFolia() ? new FoliaScheduler(this) : new BukkitScheduler(this);
     private final Collection<Command> commands = Arrays.asList(new HologramCMD(this), new FancyHologramsCMD(this));
     private HologramConfiguration configuration = new FancyHologramsConfiguration();
     private HologramStorage hologramStorage = new FlatFileHologramStorage();
     @Nullable
     private HologramManagerImpl hologramsManager;
-    private boolean isUsingViaVersion;
+//    private boolean isUsingViaVersion;
+
+    private final ExecutorService fileStorageExecutor = Executors.newSingleThreadExecutor(
+            new ThreadFactoryBuilder()
+                    .setDaemon(true)
+                    .setPriority(Thread.MIN_PRIORITY + 1)
+                    .setNameFormat("FancyHolograms-FileStorageExecutor")
+                    .build()
+    );
 
     public static @NotNull FancyHolograms get() {
         return Objects.requireNonNull(INSTANCE, "plugin is not initialized");
-    }
-
-    public static boolean isUsingFancyNpcs() {
-        return Bukkit.getPluginManager().isPluginEnabled("FancyNpcs");
     }
 
     @Override
@@ -93,31 +88,13 @@ public final class FancyHolograms extends JavaPlugin implements FancyHologramsPl
     public void onEnable() {
         getHologramConfiguration().reload(this); // initialize configuration
 
-        FancyLib.setPlugin(this);
-
-        if (!ServerSoftware.isPaper()) {
-            getLogger().warning("""
-                                                    
-                    --------------------------------------------------
-                    It is recommended to use Paper as server software.
-                    Because you are not using paper, the plugin
-                    might not work correctly.
-                    --------------------------------------------------
-                    """);
-        }
-
-
         reloadCommands();
 
         registerListeners();
 
-        checkForNewerVersion();
-
-        registerMetrics();
-
         getHologramsManager().initializeTasks();
 
-        isUsingViaVersion = Bukkit.getPluginManager().getPlugin("ViaVersion") != null;
+//        isUsingViaVersion = Bukkit.getPluginManager().getPlugin("ViaVersion") != null;
 
         if (getHologramConfiguration().isAutosaveEnabled()) {
             getScheduler().runTaskTimerAsynchronously(getHologramConfiguration().getAutosaveInterval() * 20L, 20L * 60L * getHologramConfiguration().getAutosaveInterval(), hologramsManager::saveHolograms);
@@ -127,21 +104,14 @@ public final class FancyHolograms extends JavaPlugin implements FancyHologramsPl
     @Override
     public void onDisable() {
         hologramsManager.saveHolograms();
+        fileStorageExecutor.shutdown();
         INSTANCE = null;
     }
 
-    @Override
-    public boolean isUsingViaVersion() {
-        return isUsingViaVersion;
-    }
-
-    public @NotNull VersionFetcher getVersionFetcher() {
-        return versionFetcher;
-    }
-
-    public @NotNull VersionConfig getVersionConfig() {
-        return versionConfig;
-    }
+//    @Override
+//    public boolean isUsingViaVersion() {
+//        return isUsingViaVersion;
+//    }
 
     public @NotNull FancyScheduler getScheduler() {
         return this.scheduler;
@@ -186,6 +156,10 @@ public final class FancyHolograms extends JavaPlugin implements FancyHologramsPl
         }
     }
 
+    public ExecutorService getFileStorageExecutor() {
+        return this.fileStorageExecutor;
+    }
+
     private @Nullable Function<HologramData, Hologram> resolveHologramAdapter() {
         final var version = Bukkit.getMinecraftVersion();
 
@@ -214,45 +188,6 @@ public final class FancyHolograms extends JavaPlugin implements FancyHologramsPl
 
     private void registerListeners() {
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
-
-        if (isUsingFancyNpcs()) {
-            getServer().getPluginManager().registerEvents(new NpcListener(this), this);
-        }
-    }
-
-    private void checkForNewerVersion() {
-        versionConfig.load();
-
-        final var current = new ComparableVersion(versionConfig.getVersion());
-
-        supplyAsync(getVersionFetcher()::fetchNewestVersion).thenApply(Objects::requireNonNull).whenComplete((newest, error) -> {
-            if (error != null || newest.compareTo(current) <= 0) {
-                return; // could not get the newest version or already on latest
-            }
-
-            getLogger().warning("""
-                                                            
-                    -------------------------------------------------------
-                    You are not using the latest version the FancyHolograms plugin.
-                    Please update to the newest version (%s).
-                    %s
-                    -------------------------------------------------------
-                    """.formatted(newest, getVersionFetcher().getDownloadUrl()));
-        });
-    }
-
-    private void registerMetrics() {
-        boolean isDevelopmentBuild = !versionConfig.getBuild().equalsIgnoreCase("undefined");
-
-        Metrics metrics = new Metrics(this, 17990);
-        metrics.addCustomChart(new Metrics.SingleLineChart("total_holograms", () -> hologramsManager.getHolograms().size()));
-        metrics.addCustomChart(new Metrics.SimplePie("update_notifications", () -> configuration.areVersionNotificationsMuted() ? "No" : "Yes"));
-        metrics.addCustomChart(new Metrics.SimplePie("using_development_build", () -> isDevelopmentBuild ? "Yes" : "No"));
-
-        if (isDevelopmentBuild || configuration.reportErrorsToSentry()) {
-            SentryLoader.initSentry("https://5c268150853515e1a40ed64985f5564e@o4506593995849728.ingest.sentry.io/4506602656890880", INSTANCE);
-            getLogger().info("Registered sentry error reporting");
-        }
     }
 
 }
